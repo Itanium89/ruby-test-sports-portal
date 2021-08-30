@@ -1,0 +1,37 @@
+version: '3.1'
+
+volumes:
+  postgres-data: ~
+
+services:
+  app:
+    image: ruby/sport-portal
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      args:
+        UID: ${DEV_UID}
+    volumes:
+      - ./:/var/www
+      - ${SSH_DIR}:/home/dev/.ssh
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=${POSTGRES_DATABESE_NAME}
+      - DATABASE_USER=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - RAILS_ENV
+    links:
+      - db
+    ports:
+      - ${APP_HOST_PORT}:3000
+
+  db:
+    image: postgres:10.3-alpine
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - ${DATABASE_HOST_PORT}:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
